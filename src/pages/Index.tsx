@@ -13,9 +13,9 @@ const Index = () => {
   const [outline, setOutline] = React.useState("");
 
   const steps = [
-    { label: "Fetching search results", status: "pending" },
-    { label: "Analyzing competitor content", status: "pending" },
-    { label: "Generating master outline", status: "pending" },
+    { label: "Fetching search results", status: "pending" as const },
+    { label: "Analyzing competitor content", status: "pending" as const },
+    { label: "Generating master outline", status: "pending" as const },
   ];
 
   const handleSubmit = async (keyword: string) => {
