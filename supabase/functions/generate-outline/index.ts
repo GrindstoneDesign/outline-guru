@@ -41,11 +41,31 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert content outline generator. Analyze the competitor content and create a comprehensive, well-structured outline that covers all important aspects of the topic.'
+            content: `You are an expert content strategist and outline generator. Your task is to:
+1. Analyze competitor content for structure and key topics
+2. Identify gaps in existing content
+3. Create a comprehensive, well-structured outline that:
+   - Covers all important aspects of the topic
+   - Uses clear hierarchical structure (H1, H2, H3)
+   - Includes relevant subsections
+   - Maintains logical flow and progression
+   - Incorporates unique angles missing from competitor content
+Format the outline using markdown with proper indentation and bullet points.`
           },
           {
             role: 'user',
-            content: `Create a detailed outline for the topic "${keyword}" based on these top search results:\n\n${competitorContent}`
+            content: `Create a detailed, comprehensive outline for "${keyword}". 
+Here are the top search results to analyze and improve upon:
+
+${competitorContent}
+
+Instructions:
+1. Start with an engaging introduction section
+2. Break down main concepts into clear subsections
+3. Include practical examples or case studies where relevant
+4. Add a section for best practices or tips
+5. End with a conclusion and next steps
+6. Use proper markdown formatting with clean hierarchy`
           }
         ],
       }),
