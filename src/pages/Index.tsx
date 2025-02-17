@@ -4,6 +4,7 @@ import { KeywordInput } from "@/components/KeywordInput";
 import { ProgressTracker } from "@/components/ProgressTracker";
 import { OutlineDisplay } from "@/components/OutlineDisplay";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { toast } = useToast();
@@ -22,60 +23,22 @@ const Index = () => {
     setIsLoading(true);
     setProgress(0);
     setCurrentStep(0);
+    setOutline("");
 
     try {
-      // Simulate API calls and processing for now
-      // Step 1: Fetch search results
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setProgress(33);
-      setCurrentStep(1);
-
-      // Step 2: Analyze competitor content
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      setProgress(66);
-      setCurrentStep(2);
-
-      // Step 3: Generate master outline
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      setProgress(100);
-
-      // Set dummy outline data
-      setOutline(`# ${keyword} - Master Outline
-
-## Introduction
-- Overview of ${keyword}
-- Importance in modern context
-- Key statistics and trends
-
-## Core Concepts
-- Definition and fundamentals
-- Historical evolution
-- Current best practices
-
-## Implementation Strategies
-- Step-by-step guide
-- Tools and resources
-- Common challenges and solutions
-
-## Best Practices
-- Industry standards
-- Expert recommendations
-- Case studies
-
-## Future Trends
-- Emerging technologies
-- Predicted developments
-- Preparation strategies
-
-## Conclusion
-- Key takeaways
-- Action items
-- Additional resources`);
-
-      toast({
-        title: "Success",
-        description: "Master outline generated successfully",
+      const { data, error } = await supabase.functions.invoke('generate-outline', {
+        body: { keyword }
       });
+
+      if (error) throw error;
+
+      if (data.outline) {
+        setOutline(data.outline);
+        toast({
+          title: "Success",
+          description: "Master outline generated successfully",
+        });
+      }
     } catch (error) {
       console.error("Error generating outline:", error);
       toast({
@@ -84,6 +47,7 @@ const Index = () => {
         variant: "destructive",
       });
     } finally {
+      setProgress(100);
       setIsLoading(false);
     }
   };
