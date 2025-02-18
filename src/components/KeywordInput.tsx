@@ -3,19 +3,21 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface KeywordInputProps {
-  onSubmit: (keyword: string) => void;
+  onSubmit: (keyword: string, searchEngine: "google" | "duckduckgo") => void;
   isLoading: boolean;
 }
 
 export const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit, isLoading }) => {
   const [keyword, setKeyword] = React.useState("");
+  const [searchEngine, setSearchEngine] = React.useState<"google" | "duckduckgo">("duckduckgo");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (keyword.trim()) {
-      onSubmit(keyword.trim());
+      onSubmit(keyword.trim(), searchEngine);
     }
   };
 
@@ -34,6 +36,24 @@ export const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit, isLoading 
             className="w-full transition-shadow duration-200"
             disabled={isLoading}
           />
+        </div>
+        <div className="space-y-2">
+          <label htmlFor="search-engine" className="text-sm font-medium">
+            Search Engine
+          </label>
+          <Select
+            value={searchEngine}
+            onValueChange={(value: "google" | "duckduckgo") => setSearchEngine(value)}
+            disabled={isLoading}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select search engine" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="duckduckgo">DuckDuckGo (Free)</SelectItem>
+              <SelectItem value="google">Google (SERP API)</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         <Button
           type="submit"

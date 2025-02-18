@@ -1,4 +1,3 @@
-
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
@@ -10,21 +9,41 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+async function fetchDuckDuckGoResults(keyword: string) {
+  const response = await fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(keyword)}&format=json`);
+  const data = await response.json();
+  
+  // Format DuckDuckGo results to match our expected structure
+  return data.RelatedTopics
+    .filter((topic: any) => topic.Text && topic.FirstURL)
+    .slice(0, 5)
+    .map((topic: any) => ({
+      title: topic.Text.split(' - ')[0],
+      snippet: topic.Text,
+      link: topic.FirstURL
+    }));
+}
+
+async function fetchGoogleResults(keyword: string) {
+  const searchUrl = `https://serpapi.com/search.json?q=${encodeURIComponent(keyword)}&api_key=${serpApiKey}`;
+  const searchResponse = await fetch(searchUrl);
+  const searchData = await searchResponse.json();
+  return searchData.organic_results?.slice(0, 5) || [];
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { keyword } = await req.json();
+    const { keyword, searchEngine } = await req.json();
 
-    // Step 1: Fetch search results using SERP API
-    const searchUrl = `https://serpapi.com/search.json?q=${encodeURIComponent(keyword)}&api_key=${serpApiKey}`;
-    const searchResponse = await fetch(searchUrl);
-    const searchData = await searchResponse.json();
+    // Fetch search results based on selected engine
+    const organicResults = searchEngine === 'google' 
+      ? await fetchGoogleResults(keyword)
+      : await fetchDuckDuckGoResults(keyword);
 
-    // Extract organic results and their snippets
-    const organicResults = searchData.organic_results?.slice(0, 5) || [];
     const competitorContent = organicResults
       .map(result => `${result.title}\n${result.snippet}`)
       .join('\n\n');

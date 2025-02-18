@@ -19,7 +19,7 @@ const Index = () => {
     { label: "Generating master outline", status: "pending" as const },
   ];
 
-  const handleSubmit = async (keyword: string) => {
+  const handleSubmit = async (keyword: string, searchEngine: "google" | "duckduckgo") => {
     setIsLoading(true);
     setProgress(0);
     setCurrentStep(0);
@@ -27,7 +27,7 @@ const Index = () => {
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-outline', {
-        body: { keyword }
+        body: { keyword, searchEngine }
       });
 
       if (error) throw error;
