@@ -1,3 +1,4 @@
+
 import { KeywordInput } from "@/components/KeywordInput";
 import { ProgressTracker } from "@/components/ProgressTracker";
 import { OutlineDisplay } from "@/components/OutlineDisplay";
@@ -9,11 +10,19 @@ export default function App() {
   const [keywordOutline, setKeywordOutline] = React.useState<any>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
+  const [currentStep, setCurrentStep] = React.useState(0);
   const { toast } = useToast();
+
+  const steps = [
+    { label: "Fetching search results", status: "pending" as const },
+    { label: "Analyzing competitor content", status: "pending" as const },
+    { label: "Generating master outline", status: "pending" as const },
+  ];
 
   const handleGenerateOutline = async (keyword: string, searchEngine: "google" | "duckduckgo") => {
     setIsLoading(true);
     setProgress(10);
+    setCurrentStep(0);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-outline', {
@@ -62,14 +71,34 @@ export default function App() {
     }
   };
 
+  const handleExport = () => {
+    // Implement export functionality
+    console.log("Exporting outline:", keywordOutline);
+    toast({
+      title: "Export Started",
+      description: "Your outline is being exported...",
+    });
+  };
+
   return (
     <div className="container mx-auto py-12 px-4">
       <h1 className="text-3xl font-bold text-center mb-8">
         SEO Content Outline Generator
       </h1>
       <KeywordInput onSubmit={handleGenerateOutline} isLoading={isLoading} />
-      <ProgressTracker progress={progress} isLoading={isLoading} />
-      {keywordOutline && <OutlineDisplay outline={keywordOutline} />}
+      {isLoading && (
+        <ProgressTracker
+          steps={steps}
+          currentStep={currentStep}
+          progress={progress}
+        />
+      )}
+      {keywordOutline && (
+        <OutlineDisplay 
+          outline={keywordOutline} 
+          onExport={handleExport}
+        />
+      )}
     </div>
   );
 }
