@@ -7,8 +7,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/ui/navbar";
 import React from "react";
 
+interface OutlineData {
+  outline: string;
+  searchResults: any[];
+}
+
 export default function App() {
-  const [keywordOutline, setKeywordOutline] = React.useState<any>(null);
+  const [keywordOutline, setKeywordOutline] = React.useState<OutlineData | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const [currentStep, setCurrentStep] = React.useState(0);

@@ -5,7 +5,10 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface OutlineDisplayProps {
-  outline: string;
+  outline: {
+    outline: string;
+    searchResults: any[];
+  };
   onExport: () => void;
 }
 
@@ -20,7 +23,7 @@ export const OutlineDisplay: React.FC<OutlineDisplayProps> = ({ outline, onExpor
           </Button>
         </div>
         <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-          <div className="whitespace-pre-wrap">{outline}</div>
+          <div className="whitespace-pre-wrap">{outline.outline}</div>
         </ScrollArea>
       </div>
     </Card>
