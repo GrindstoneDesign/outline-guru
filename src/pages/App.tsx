@@ -4,6 +4,7 @@ import { ProgressTracker } from "@/components/ProgressTracker";
 import { OutlineDisplay } from "@/components/OutlineDisplay";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Navbar } from "@/components/ui/navbar";
 import React from "react";
 
 export default function App() {
@@ -81,24 +82,27 @@ export default function App() {
   };
 
   return (
-    <div className="container mx-auto py-12 px-4">
-      <h1 className="text-3xl font-bold text-center mb-8">
-        SEO Content Outline Generator
-      </h1>
-      <KeywordInput onSubmit={handleGenerateOutline} isLoading={isLoading} />
-      {isLoading && (
-        <ProgressTracker
-          steps={steps}
-          currentStep={currentStep}
-          progress={progress}
-        />
-      )}
-      {keywordOutline && (
-        <OutlineDisplay 
-          outline={keywordOutline} 
-          onExport={handleExport}
-        />
-      )}
+    <div className="min-h-screen bg-background">
+      <Navbar />
+      <div className="container mx-auto py-12 px-4">
+        <h1 className="text-3xl font-bold text-center mb-8">
+          SEO Content Outline Generator
+        </h1>
+        <KeywordInput onSubmit={handleGenerateOutline} isLoading={isLoading} />
+        {isLoading && (
+          <ProgressTracker
+            steps={steps}
+            currentStep={currentStep}
+            progress={progress}
+          />
+        )}
+        {keywordOutline && (
+          <OutlineDisplay 
+            outline={keywordOutline} 
+            onExport={handleExport}
+          />
+        )}
+      </div>
     </div>
   );
 }
