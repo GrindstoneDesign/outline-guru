@@ -6,12 +6,17 @@ import { OutlineDisplay } from "@/components/OutlineDisplay";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+interface OutlineData {
+  outline: string;
+  searchResults: any[];
+}
+
 const Index = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = React.useState(false);
   const [currentStep, setCurrentStep] = React.useState(0);
   const [progress, setProgress] = React.useState(0);
-  const [outline, setOutline] = React.useState("");
+  const [outlineData, setOutlineData] = React.useState<OutlineData | null>(null);
 
   const steps = [
     { label: "Fetching search results", status: "pending" as const },
@@ -23,7 +28,7 @@ const Index = () => {
     setIsLoading(true);
     setProgress(0);
     setCurrentStep(0);
-    setOutline("");
+    setOutlineData(null);
 
     try {
       const { data, error } = await supabase.functions.invoke('generate-outline', {
@@ -32,8 +37,8 @@ const Index = () => {
 
       if (error) throw error;
 
-      if (data.outline) {
-        setOutline(data.outline);
+      if (data) {
+        setOutlineData(data);
         toast({
           title: "Success",
           description: "Master outline generated successfully",
@@ -53,7 +58,9 @@ const Index = () => {
   };
 
   const handleExport = () => {
-    const blob = new Blob([outline], { type: "text/plain" });
+    if (!outlineData) return;
+
+    const blob = new Blob([outlineData.outline], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -90,8 +97,11 @@ const Index = () => {
             />
           )}
           
-          {outline && !isLoading && (
-            <OutlineDisplay outline={outline} onExport={handleExport} />
+          {outlineData && !isLoading && (
+            <OutlineDisplay 
+              outline={outlineData} 
+              onExport={handleExport}
+            />
           )}
         </div>
       </div>
