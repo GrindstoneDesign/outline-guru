@@ -9,7 +9,13 @@ import React from "react";
 
 interface OutlineData {
   outline: string;
-  searchResults: any[];
+  searchResults: Array<{
+    title: string;
+    snippet: string;
+    link: string;
+    position?: number;
+    analysis?: string;
+  }>;
 }
 
 export default function App() {
@@ -51,6 +57,7 @@ export default function App() {
       }
 
       if (data) {
+        console.log("Received data:", data);
         setKeywordOutline(data);
         setProgress(100);
         toast({
