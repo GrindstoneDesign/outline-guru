@@ -29,17 +29,26 @@ serve(async (req) => {
     // Generate individual analyses
     const individualAnalysesPromise = organicResults.map(async (result, index) => {
       const content = `Analyze this content from competitor ${index + 1}:\n\n${result.title}\n${result.snippet}`;
-      return generateAnalysis(content, INDIVIDUAL_ANALYSIS_PROMPT, openAIApiKey!);
+      const analysis = await generateAnalysis(content, INDIVIDUAL_ANALYSIS_PROMPT, openAIApiKey!);
+      return {
+        ...result,
+        analysis,
+        position: index + 1
+      };
     });
 
     const individualAnalyses = await Promise.all(individualAnalysesPromise);
     
     // Generate master strategy
-    const masterStrategyContent = `Create a comprehensive content strategy for "${keyword}" based on these competitor analyses:\n\n${individualAnalyses.join('\n\n=== NEXT COMPETITOR ===\n\n')}`;
+    const masterStrategyContent = `Create a comprehensive content strategy for "${keyword}" based on these competitor analyses:\n\n${individualAnalyses.map(a => a.analysis).join('\n\n=== NEXT COMPETITOR ===\n\n')}`;
     const outline = await generateAnalysis(masterStrategyContent, MASTER_STRATEGY_PROMPT, openAIApiKey!);
 
+    // Return both individual analyses and master outline
     return new Response(
-      JSON.stringify({ outline, searchResults: organicResults }),
+      JSON.stringify({ 
+        outline,
+        searchResults: individualAnalyses
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
