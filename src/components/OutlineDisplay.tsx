@@ -13,12 +13,15 @@ interface OutlineDisplayProps {
       snippet: string;
       link: string;
       position?: number;
+      analysis?: string;
     }>;
   };
   onExport: () => void;
 }
 
 export const OutlineDisplay: React.FC<OutlineDisplayProps> = ({ outline, onExport }) => {
+  const [selectedCompetitor, setSelectedCompetitor] = React.useState<number>(0);
+
   return (
     <Card className="p-6 glass animate-fade-up">
       <div className="space-y-4">
@@ -42,39 +45,59 @@ export const OutlineDisplay: React.FC<OutlineDisplayProps> = ({ outline, onExpor
           </TabsContent>
 
           <TabsContent value="individual">
-            <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-              <div className="space-y-8">
+            <div className="space-y-4">
+              <div className="flex space-x-2 overflow-x-auto pb-2">
                 {outline.searchResults.map((result, index) => (
-                  <div key={index} className="space-y-2 pb-4 border-b last:border-b-0">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-medium text-base">
-                          Competitor #{index + 1}: {result.title}
-                        </h4>
-                        <a 
-                          href={result.link} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          className="text-sm text-blue-600 hover:underline"
-                        >
-                          {result.link}
-                        </a>
-                      </div>
-                      {result.position && (
-                        <span className="text-sm text-gray-500">
-                          SERP Position: {result.position}
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600">{result.snippet}</p>
-                    {/* Individual analysis would go here once we modify the backend to return it */}
-                    <div className="mt-2 text-sm text-gray-800 whitespace-pre-wrap">
-                      Analysis coming soon...
-                    </div>
-                  </div>
+                  <Button
+                    key={index}
+                    variant={selectedCompetitor === index ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setSelectedCompetitor(index)}
+                    className="whitespace-nowrap"
+                  >
+                    Competitor #{index + 1}
+                  </Button>
                 ))}
               </div>
-            </ScrollArea>
+
+              <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+                {outline.searchResults[selectedCompetitor] && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-medium text-base">
+                          {outline.searchResults[selectedCompetitor].title}
+                        </h4>
+                        {outline.searchResults[selectedCompetitor].position && (
+                          <span className="text-sm text-gray-500">
+                            SERP Position: {outline.searchResults[selectedCompetitor].position}
+                          </span>
+                        )}
+                      </div>
+                      <a
+                        href={outline.searchResults[selectedCompetitor].link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-blue-600 hover:underline block"
+                      >
+                        {outline.searchResults[selectedCompetitor].link}
+                      </a>
+                      <p className="text-sm text-gray-600 mt-2">
+                        {outline.searchResults[selectedCompetitor].snippet}
+                      </p>
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t">
+                      <h5 className="font-medium mb-2">Detailed Analysis</h5>
+                      <div className="whitespace-pre-wrap text-sm">
+                        {outline.searchResults[selectedCompetitor].analysis || 
+                          "No detailed analysis available for this competitor."}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </ScrollArea>
+            </div>
           </TabsContent>
         </Tabs>
       </div>
