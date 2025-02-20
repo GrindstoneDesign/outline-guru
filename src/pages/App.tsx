@@ -7,15 +7,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/ui/navbar";
 import React from "react";
 
+interface SearchResult {
+  title: string;
+  snippet: string;
+  link: string;
+  position?: number;
+  analysis?: string;
+}
+
 interface OutlineData {
   outline: string;
-  searchResults: Array<{
-    title: string;
-    snippet: string;
-    link: string;
-    position?: number;
-    analysis?: string;
-  }>;
+  searchResults: SearchResult[];
 }
 
 export default function App() {
@@ -39,8 +41,8 @@ export default function App() {
     try {
       const { data, error } = await supabase.functions.invoke('generate-outline', {
         body: {
-          keyword: keyword,
-          searchEngine: searchEngine
+          keyword,
+          searchEngine
         }
       });
 
@@ -51,28 +53,32 @@ export default function App() {
           description: "Failed to generate outline. Please try again.",
           variant: "destructive",
         });
-        setIsLoading(false);
-        setProgress(0);
         return;
       }
 
       if (data) {
-        console.log("Received data:", data);
-        setKeywordOutline(data);
-        setProgress(100);
-        toast({
-          title: "Outline Generated",
-          description: "Successfully generated outline for keyword.",
-        });
-      } else {
-        toast({
-          title: "Unexpected Error",
-          description: "Failed to generate outline. Please try again.",
-          variant: "destructive",
-        });
+        console.log("Received outline data:", data);
+        // Ensure the data structure is correct before setting state
+        if (typeof data.outline === 'string' && Array.isArray(data.searchResults)) {
+          setKeywordOutline({
+            outline: data.outline,
+            searchResults: data.searchResults
+          });
+          toast({
+            title: "Success",
+            description: "Successfully generated outline for keyword.",
+          });
+        } else {
+          console.error("Invalid data structure received:", data);
+          toast({
+            title: "Error",
+            description: "Received invalid data format. Please try again.",
+            variant: "destructive",
+          });
+        }
       }
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Error generating outline:", err);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",
@@ -81,11 +87,13 @@ export default function App() {
     } finally {
       setIsLoading(false);
       setProgress(0);
+      setCurrentStep(0);
     }
   };
 
   const handleExport = () => {
-    // Implement export functionality
+    if (!keywordOutline) return;
+    
     console.log("Exporting outline:", keywordOutline);
     toast({
       title: "Export Started",
