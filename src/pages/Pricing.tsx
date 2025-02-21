@@ -5,14 +5,16 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { Json } from "@/integrations/supabase/types";
 
 interface Plan {
   id: string;
   name: string;
   price_amount: number;
   price_id: string;
-  features: string[];
+  features: Json;
   credits: number;
+  created_at: string;
 }
 
 export default function Pricing() {
@@ -113,7 +115,10 @@ export default function Pricing() {
             <CardContent>
               <ul className="space-y-2">
                 {Array.isArray(plan.features) && plan.features.map((feature, index) => (
-                  <li key={index}>{feature}</li>
+                  <li key={index} className="flex items-center gap-2">
+                    <span>✓</span>
+                    {feature}
+                  </li>
                 ))}
               </ul>
             </CardContent>
