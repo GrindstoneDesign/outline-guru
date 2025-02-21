@@ -5,9 +5,12 @@ import { HistoryDisplay } from "@/components/HistoryDisplay";
 import { OutlineInputSection } from "@/components/OutlineInputSection";
 import { Navbar } from "@/components/ui/navbar";
 import { useOutlineGeneration } from "@/hooks/useOutlineGeneration";
-import React from "react";
+import React, { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function App() {
+  const navigate = useNavigate();
   const {
     keywordOutline,
     isLoading,
@@ -24,6 +27,25 @@ export default function App() {
     handleHistoryItemClick,
     setManualMode
   } = useOutlineGeneration();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/");
+      }
+    };
+
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!session) {
+        navigate("/");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const steps = [
     { label: "Fetching search results", status: "pending" as const },
