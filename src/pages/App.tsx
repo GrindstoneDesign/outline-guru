@@ -6,6 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/ui/navbar";
 import { HistoryDisplay } from "@/components/HistoryDisplay";
+import { ManualUrlInput } from "@/components/ManualUrlInput";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 
@@ -27,6 +28,8 @@ export default function App() {
   const [isLoading, setIsLoading] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const [currentStep, setCurrentStep] = React.useState(0);
+  const [manualMode, setManualMode] = React.useState(false);
+  const [manualUrls, setManualUrls] = React.useState<string[]>([]);
   const { toast } = useToast();
 
   const steps = [
@@ -59,7 +62,8 @@ export default function App() {
       const { data, error } = await supabase.functions.invoke('generate-outline', {
         body: {
           keyword,
-          searchEngine
+          searchEngine,
+          manualUrls: manualMode ? manualUrls : undefined
         }
       });
 
@@ -67,15 +71,15 @@ export default function App() {
         console.error("Function invocation error:", error);
         toast({
           title: "Error",
-          description: "Failed to generate outline. Please try again.",
+          description: "Failed to generate outline. You can try adding URLs manually.",
           variant: "destructive",
         });
+        setManualMode(true);
         return;
       }
 
       if (data) {
         console.log("Received outline data:", data);
-        // Ensure the data structure is correct before setting state
         if (typeof data.outline === 'string' && Array.isArray(data.searchResults)) {
           // Store the analysis in the database
           const { error: dbError } = await supabase
@@ -84,7 +88,7 @@ export default function App() {
               keyword,
               search_engine: searchEngine,
               outline: data.outline,
-              search_results: data.searchResults
+              search_results: data.searchResults.filter(result => result.title && result.link)
             });
 
           if (dbError) {
@@ -95,26 +99,88 @@ export default function App() {
 
           setKeywordOutline({
             outline: data.outline,
-            searchResults: data.searchResults
+            searchResults: data.searchResults.filter(result => result.title && result.link)
           });
           toast({
             title: "Success",
             description: "Successfully generated outline for keyword.",
           });
+          
+          // Reset manual mode after successful analysis
+          setManualMode(false);
+          setManualUrls([]);
         } else {
           console.error("Invalid data structure received:", data);
           toast({
             title: "Error",
-            description: "Received invalid data format. Please try again.",
+            description: "Received invalid data format. Please try again or add URLs manually.",
             variant: "destructive",
           });
+          setManualMode(true);
         }
       }
     } catch (err) {
       console.error("Error generating outline:", err);
       toast({
         title: "Error",
-        description: "An unexpected error occurred. Please try again.",
+        description: "An unexpected error occurred. You can try adding URLs manually.",
+        variant: "destructive",
+      });
+      setManualMode(true);
+    } finally {
+      setIsLoading(false);
+      setProgress(0);
+      setCurrentStep(0);
+    }
+  };
+
+  const handleAddManualUrl = (url: string) => {
+    setManualUrls([...manualUrls, url]);
+  };
+
+  const handleRemoveManualUrl = (index: number) => {
+    setManualUrls(manualUrls.filter((_, i) => i !== index));
+  };
+
+  const handleManualAnalysis = async () => {
+    if (manualUrls.length === 0) return;
+    setIsLoading(true);
+    setProgress(10);
+    setCurrentStep(0);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-outline', {
+        body: {
+          manualUrls,
+          isManualMode: true
+        }
+      });
+
+      if (error) {
+        console.error("Manual analysis error:", error);
+        toast({
+          title: "Error",
+          description: "Failed to analyze URLs. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (data && typeof data.outline === 'string' && Array.isArray(data.searchResults)) {
+        setKeywordOutline({
+          outline: data.outline,
+          searchResults: data.searchResults.filter(result => result.title && result.link)
+        });
+        toast({
+          title: "Success",
+          description: "Successfully analyzed competitor URLs.",
+        });
+      }
+    } catch (err) {
+      console.error("Manual analysis error:", err);
+      toast({
+        title: "Error",
+        description: "Failed to analyze URLs. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -152,7 +218,27 @@ export default function App() {
         <h1 className="text-3xl font-bold text-center mb-8">
           SEO Content Outline Generator
         </h1>
-        <KeywordInput onSubmit={handleGenerateOutline} isLoading={isLoading} />
+        {!manualMode ? (
+          <KeywordInput onSubmit={handleGenerateOutline} isLoading={isLoading} />
+        ) : (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold">Manual URL Analysis</h2>
+              <Button
+                variant="outline"
+                onClick={() => setManualMode(false)}
+              >
+                Switch to Keyword Search
+              </Button>
+            </div>
+            <ManualUrlInput
+              urls={manualUrls}
+              onAddUrl={handleAddManualUrl}
+              onRemoveUrl={handleRemoveManualUrl}
+              onSubmit={handleManualAnalysis}
+            />
+          </div>
+        )}
         {isLoading && (
           <ProgressTracker
             steps={steps}
