@@ -17,6 +17,15 @@ interface OutlineData {
   searchResults: SearchResult[];
 }
 
+interface ApiResponse {
+  success: boolean;
+  error?: string;
+  data?: {
+    outline: string;
+    searchResults: SearchResult[];
+  };
+}
+
 export const useOutlineGeneration = () => {
   const [keywordOutline, setKeywordOutline] = React.useState<OutlineData | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
@@ -40,12 +49,42 @@ export const useOutlineGeneration = () => {
     },
   });
 
+  // Get user's subscription status
+  const { data: subscription } = useQuery({
+    queryKey: ['user-subscription'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return null;
+
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('*, subscription_plans(*)')
+        .eq('user_id', session.user.id)
+        .eq('status', 'active')
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const handleGenerateOutline = async (keyword: string, searchEngine: "google" | "duckduckgo") => {
     setIsLoading(true);
     setProgress(10);
     setCurrentStep(0);
 
     try {
+      // Check subscription for Google search access
+      if (searchEngine === 'google' && (!subscription || subscription.subscription_plans.name === 'Starter')) {
+        toast({
+          title: "Upgrade Required",
+          description: "Google search is only available on Pro and Agency plans",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-outline', {
         body: {
           keyword,
@@ -204,6 +243,7 @@ export const useOutlineGeneration = () => {
     manualMode,
     manualUrls,
     recentAnalyses,
+    subscription,
     handleGenerateOutline,
     handleAddManualUrl,
     handleRemoveManualUrl,
