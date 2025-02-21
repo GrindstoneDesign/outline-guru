@@ -5,7 +5,9 @@ import { OutlineDisplay } from "@/components/OutlineDisplay";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/ui/navbar";
+import { HistoryDisplay } from "@/components/HistoryDisplay";
 import React from "react";
+import { useQuery } from "@tanstack/react-query";
 
 interface SearchResult {
   title: string;
@@ -32,6 +34,21 @@ export default function App() {
     { label: "Analyzing competitor content", status: "pending" as const },
     { label: "Generating master outline", status: "pending" as const },
   ];
+
+  // Fetch recent analyses
+  const { data: recentAnalyses, refetch: refetchAnalyses } = useQuery({
+    queryKey: ['competitor-analyses'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('competitor_analyses')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(5);
+
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const handleGenerateOutline = async (keyword: string, searchEngine: "google" | "duckduckgo") => {
     setIsLoading(true);
@@ -60,6 +77,22 @@ export default function App() {
         console.log("Received outline data:", data);
         // Ensure the data structure is correct before setting state
         if (typeof data.outline === 'string' && Array.isArray(data.searchResults)) {
+          // Store the analysis in the database
+          const { error: dbError } = await supabase
+            .from('competitor_analyses')
+            .insert({
+              keyword,
+              search_engine: searchEngine,
+              outline: data.outline,
+              search_results: data.searchResults
+            });
+
+          if (dbError) {
+            console.error("Error storing analysis:", dbError);
+          } else {
+            refetchAnalyses();
+          }
+
           setKeywordOutline({
             outline: data.outline,
             searchResults: data.searchResults
@@ -101,6 +134,17 @@ export default function App() {
     });
   };
 
+  const handleHistoryItemClick = (analysis: any) => {
+    setKeywordOutline({
+      outline: analysis.outline,
+      searchResults: analysis.search_results
+    });
+    toast({
+      title: "Analysis Loaded",
+      description: `Loaded analysis for "${analysis.keyword}"`,
+    });
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -114,6 +158,12 @@ export default function App() {
             steps={steps}
             currentStep={currentStep}
             progress={progress}
+          />
+        )}
+        {recentAnalyses && recentAnalyses.length > 0 && (
+          <HistoryDisplay 
+            analyses={recentAnalyses} 
+            onItemClick={handleHistoryItemClick} 
           />
         )}
         {keywordOutline && (
