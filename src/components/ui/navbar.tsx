@@ -11,6 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./dropdown-menu";
+import { SignInDialog } from "../auth/SignInDialog";
 
 export function Navbar() {
   const [user, setUser] = useState<User | null>(null);
@@ -32,15 +33,6 @@ export function Navbar() {
 
     return () => subscription.unsubscribe();
   }, []);
-
-  const handleSignInWithGoogle = async () => {
-    await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/app`
-      }
-    });
-  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -90,9 +82,7 @@ export function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button onClick={handleSignInWithGoogle}>
-                Sign in with Google
-              </Button>
+              <SignInDialog />
             )}
           </nav>
         </div>
