@@ -114,10 +114,10 @@ export default function Pricing() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {Array.isArray(plan.features) && plan.features.map((feature, index) => (
+                {Array.isArray(plan.features) && plan.features.map((feature: string, index: number) => (
                   <li key={index} className="flex items-center gap-2">
                     <span>✓</span>
-                    {feature}
+                    {String(feature)}
                   </li>
                 ))}
               </ul>
