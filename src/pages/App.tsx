@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Navbar } from "@/components/ui/navbar";
 import { HistoryDisplay } from "@/components/HistoryDisplay";
 import { ManualUrlInput } from "@/components/ManualUrlInput";
+import { Button } from "@/components/ui/button";
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 
