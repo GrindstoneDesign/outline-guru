@@ -4,101 +4,93 @@
 @tailwind utilities;
 
 @layer base {
-  body {
-    @apply bg-space-black text-spectral-white antialiased overflow-x-hidden;
-    background-image: 
-      linear-gradient(to bottom, rgba(26, 26, 46, 0.5) 1px, transparent 1px),
-      linear-gradient(to right, rgba(26, 26, 46, 0.5) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-
   :root {
-    --background: 240 33% 5%;
-    --foreground: 220 33% 98%;
-    --card: 240 33% 15%;
-    --card-foreground: 220 33% 98%;
-    --popover: 240 33% 5%;
-    --popover-foreground: 220 33% 98%;
-    --primary: 174 100% 48%;
-    --primary-foreground: 240 33% 5%;
-    --secondary: 300 100% 50%;
-    --secondary-foreground: 240 33% 5%;
-    --muted: 240 33% 15%;
-    --muted-foreground: 220 33% 98%;
-    --accent: 240 33% 15%;
-    --accent-foreground: 220 33% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 220 33% 98%;
-    --border: 240 33% 15%;
-    --input: 240 33% 15%;
-    --ring: 174 100% 48%;
-    --radius: 0.5rem;
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 228 47% 33%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 0 100% 71%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 90%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 228 47% 33%;
+    --radius: 0.75rem;
   }
 
-  * {
-    @apply border-border selection:bg-electric-teal/20 selection:text-electric-teal;
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 228 47% 33%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 0 100% 71%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 228 47% 33%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-semibold tracking-tight;
+  }
+
+  input, select, textarea {
+    @apply transition-colors duration-200;
   }
 }
 
 @layer components {
-  .cyber-button {
-    @apply relative inline-flex items-center justify-center px-6 py-2 overflow-hidden font-mono font-medium tracking-wider text-spectral-white bg-space-black border border-electric-teal rounded-md transition-all duration-300 hover:bg-gradient-cyber hover:shadow-neon active:scale-95;
-  }
-  
-  .cyber-button::before {
-    @apply content-[''] absolute -z-10 inset-0 bg-gradient-cyber opacity-0 transition-opacity duration-300;
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
   }
 
-  .cyber-button:hover::before {
-    @apply opacity-100;
+  .btn-primary {
+    @apply bg-primary text-primary-foreground hover:bg-primary-hover;
   }
 
-  .cyber-input {
-    @apply bg-cosmic-purple border-electric-teal/30 text-spectral-white placeholder:text-spectral-white/30 focus:border-electric-teal focus:ring-1 focus:ring-electric-teal transition-all duration-300;
+  .btn-secondary {
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary-hover;
   }
 
-  .cyber-card {
-    @apply relative bg-cosmic-purple border border-electric-teal/20 rounded-lg overflow-hidden transition-all duration-300 hover:border-electric-teal/50 hover:shadow-holographic;
+  .card {
+    @apply rounded-lg border bg-card p-6 shadow-sm transition-shadow hover:shadow-md dark:shadow-none;
   }
 
-  .cyber-card::before {
-    @apply content-[''] absolute inset-0 bg-gradient-cyber opacity-0 transition-opacity duration-300 pointer-events-none;
-    mix-blend-mode: overlay;
+  .input {
+    @apply flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50;
   }
 
-  .cyber-card:hover::before {
-    @apply opacity-10;
-  }
-
-  .scanlines {
-    @apply pointer-events-none fixed inset-0 z-50 bg-gradient-to-b from-black/2 to-transparent bg-repeat-y;
-    background-size: 100% 2px;
+  .glass {
+    @apply bg-background/80 backdrop-blur-md border border-border/50 shadow-sm;
   }
 }
 
 @layer utilities {
-  .text-glow {
-    text-shadow: 0 0 10px theme('colors.electric-teal');
-  }
-
-  .text-gradient {
-    @apply bg-gradient-cyber bg-clip-text text-transparent;
+  .text-balance {
+    text-wrap: balance;
   }
 }
 
-/* CRT screen effect */
-.crt {
-  @apply relative overflow-hidden;
-}
-
-.crt::before {
-  @apply content-[''] pointer-events-none fixed inset-0 z-50;
-  background: radial-gradient(circle at center, transparent 60%, rgba(0, 0, 0, 0.15) 100%);
-}
-
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    @apply !transition-none !animate-none;
-  }
-}
