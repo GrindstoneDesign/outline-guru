@@ -10,6 +10,7 @@ import Features from "@/pages/Features";
 import Pricing from "@/pages/Pricing";
 import About from "@/pages/About";
 import App from "@/pages/App";
+import Reviews from "@/pages/Reviews";
 import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const AppRoot = () => (
             <Route path="/features" element={<Features />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/about" element={<About />} />
+            <Route path="/reviews" element={<Reviews />} />
           </Route>
           <Route path="/app" element={<App />} />
           <Route path="*" element={<NotFound />} />

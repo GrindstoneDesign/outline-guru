@@ -59,6 +59,9 @@ export function Navbar() {
             <Link to="/about" className="text-sm font-medium transition-colors hover:text-primary">
               About
             </Link>
+            <Link to="/reviews" className="text-sm font-medium transition-colors hover:text-primary">
+              Reviews
+            </Link>
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
