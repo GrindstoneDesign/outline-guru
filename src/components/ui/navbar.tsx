@@ -34,10 +34,6 @@ export function Navbar() {
     return () => subscription.unsubscribe();
   }, []);
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
-
   if (loading) {
     return null; // Or show a loading spinner
   }
@@ -59,8 +55,11 @@ export function Navbar() {
             <Link to="/about" className="text-sm font-medium transition-colors hover:text-primary">
               About
             </Link>
+            <Link to="/app" className="text-sm font-medium transition-colors hover:text-primary">
+              Content Brief
+            </Link>
             <Link to="/reviews" className="text-sm font-medium transition-colors hover:text-primary">
-              Reviews
+              Review Scraper
             </Link>
             {user ? (
               <DropdownMenu>
