@@ -5,17 +5,24 @@ import { SearchResult, OutlineData } from "@/types/outline";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useRecentAnalyses } from "@/hooks/useRecentAnalyses";
 import { outlineService } from "@/services/outlineService";
+import { useManualUrls } from "@/hooks/useManualUrls";
 
 export const useOutlineGeneration = () => {
   const [keywordOutline, setKeywordOutline] = React.useState<OutlineData | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [progress, setProgress] = React.useState(0);
   const [currentStep, setCurrentStep] = React.useState(0);
-  const [manualMode, setManualMode] = React.useState(false);
-  const [manualUrls, setManualUrls] = React.useState<string[]>([]);
   const { toast } = useToast();
   const { subscription } = useSubscription();
   const { recentAnalyses, refetchAnalyses } = useRecentAnalyses();
+  const {
+    manualMode,
+    manualUrls,
+    setManualMode,
+    handleAddManualUrl,
+    handleRemoveManualUrl,
+    resetManualUrls
+  } = useManualUrls();
 
   const handleGenerateOutline = async (keyword: string, searchEngine: "google" | "duckduckgo") => {
     setIsLoading(true);
@@ -39,11 +46,19 @@ export const useOutlineGeneration = () => {
       });
 
       if (data && typeof data.outline === 'string' && Array.isArray(data.searchResults)) {
+        const searchResultsJson = data.searchResults.map(result => ({
+          title: result.title,
+          snippet: result.snippet,
+          link: result.link,
+          position: result.position,
+          analysis: result.analysis
+        }));
+
         await outlineService.saveAnalysis({
           keyword,
           searchEngine,
           outline: data.outline,
-          searchResults: data.searchResults
+          searchResults: searchResultsJson
         });
 
         refetchAnalyses();
@@ -57,8 +72,7 @@ export const useOutlineGeneration = () => {
           description: "Successfully generated outline for keyword.",
         });
         
-        setManualMode(false);
-        setManualUrls([]);
+        resetManualUrls();
       } else {
         throw new Error("Invalid data structure received");
       }
@@ -75,14 +89,6 @@ export const useOutlineGeneration = () => {
       setProgress(0);
       setCurrentStep(0);
     }
-  };
-
-  const handleAddManualUrl = (url: string) => {
-    setManualUrls([...manualUrls, url]);
-  };
-
-  const handleRemoveManualUrl = (index: number) => {
-    setManualUrls(manualUrls.filter((_, i) => i !== index));
   };
 
   const handleManualAnalysis = async () => {
