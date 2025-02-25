@@ -61,7 +61,7 @@ export default function Reviews() {
 
   const filteredReviews = reviews.filter(review => {
     const categoryMatch = filterCategory === "all" || review.category === filterCategory;
-    const messageMatch = filterMessageType === "all" || review.messageType === filterMessageType;
+    const messageMatch = filterMessageType === "all" || review.message_type === filterMessageType;
     return categoryMatch && messageMatch;
   });
 
@@ -176,9 +176,9 @@ export default function Reviews() {
                     </TableCell>
                     <TableCell>{review.topic}</TableCell>
                     <TableCell>{review.category}</TableCell>
-                    <TableCell>{review.messageType}</TableCell>
+                    <TableCell>{review.message_type}</TableCell>
                     <TableCell className="max-w-xs">
-                      <div className="truncate">{review.feedbackLocation}</div>
+                      <div className="truncate">{review.feedback_location}</div>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -190,3 +190,4 @@ export default function Reviews() {
     </div>
   );
 }
+
