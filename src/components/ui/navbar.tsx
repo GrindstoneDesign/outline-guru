@@ -18,13 +18,11 @@ export function Navbar() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -39,50 +37,74 @@ export function Navbar() {
   };
 
   if (loading) {
-    return null; // Or show a loading spinner
+    return null;
   }
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center">
-        <Link to="/" className="mr-6 flex items-center space-x-2">
-          <span className="font-bold">SERPBriefs</span>
-        </Link>
-        <div className="flex flex-1 items-center justify-between space-x-2 md:justify-end">
-          <nav className="flex items-center space-x-6">
-            <Link to="/features" className="text-sm font-medium transition-colors hover:text-primary">
+    <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto">
+        <div className="flex h-16 items-center justify-between">
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="font-heading font-bold text-xl bg-gradient-to-r from-primary to-teal bg-clip-text text-transparent">
+              SERPBriefs
+            </span>
+          </Link>
+
+          <div className="hidden md:flex items-center space-x-6">
+            <Link
+              to="/features"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+            >
               Features
             </Link>
-            <Link to="/pricing" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link
+              to="/pricing"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+            >
               Pricing
             </Link>
-            <Link to="/about" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link
+              to="/about"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+            >
               About
             </Link>
-            <Link to="/app" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link
+              to="/app"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+            >
               Content Brief
             </Link>
-            <Link to="/reviews" className="text-sm font-medium transition-colors hover:text-primary">
+            <Link
+              to="/reviews"
+              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+            >
               Review Scraper
             </Link>
+
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                     <Avatar className="h-8 w-8">
-                      <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.full_name} />
-                      <AvatarFallback>{user.user_metadata.full_name?.charAt(0)}</AvatarFallback>
+                      <AvatarImage 
+                        src={user.user_metadata.avatar_url} 
+                        alt={user.user_metadata.full_name} 
+                      />
+                      <AvatarFallback>
+                        {user.user_metadata.full_name?.charAt(0)}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem className="font-normal">
-                    <Link to="/app">Dashboard</Link>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuItem className="font-medium">
+                    <Link to="/app" className="w-full">Dashboard</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="font-normal">
-                    <Link to="/account">Account</Link>
+                  <DropdownMenuItem className="font-medium">
+                    <Link to="/account" className="w-full">Account</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>
+                  <DropdownMenuItem onClick={handleSignOut} className="font-medium">
                     Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -90,9 +112,10 @@ export function Navbar() {
             ) : (
               <SignInDialog />
             )}
-          </nav>
+          </div>
         </div>
       </div>
     </nav>
   );
 }
+

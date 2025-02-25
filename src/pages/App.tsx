@@ -34,40 +34,56 @@ export default function App() {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="container mx-auto py-12 px-4">
-        <h1 className="text-3xl font-bold text-center mb-8">
-          SEO Content Outline Generator
-        </h1>
-        <OutlineInputSection
-          isLoading={isLoading}
-          manualMode={manualMode}
-          manualUrls={manualUrls}
-          onGenerateOutline={handleGenerateOutline}
-          onAddUrl={handleAddManualUrl}
-          onRemoveUrl={handleRemoveManualUrl}
-          onManualAnalysis={handleManualAnalysis}
-          onSwitchMode={() => setManualMode(false)}
-        />
-        {isLoading && (
-          <ProgressTracker
-            steps={steps}
-            currentStep={currentStep}
-            progress={progress}
-          />
-        )}
-        {recentAnalyses && recentAnalyses.length > 0 && (
-          <HistoryDisplay 
-            analyses={recentAnalyses} 
-            onItemClick={handleHistoryItemClick} 
-          />
-        )}
-        {keywordOutline && (
-          <OutlineDisplay 
-            outline={keywordOutline} 
-            onExport={handleExport}
-          />
-        )}
-      </div>
+      <main className="container mx-auto py-8 px-4 space-y-8">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-4xl font-heading font-bold text-center mb-8 bg-gradient-to-r from-primary to-teal bg-clip-text text-transparent">
+            SEO Content Outline Generator
+          </h1>
+          
+          <div className="space-y-8">
+            <div className="card animate-fade-in">
+              <OutlineInputSection
+                isLoading={isLoading}
+                manualMode={manualMode}
+                manualUrls={manualUrls}
+                onGenerateOutline={handleGenerateOutline}
+                onAddUrl={handleAddManualUrl}
+                onRemoveUrl={handleRemoveManualUrl}
+                onManualAnalysis={handleManualAnalysis}
+                onSwitchMode={() => setManualMode(false)}
+              />
+            </div>
+
+            {isLoading && (
+              <div className="card animate-fade-in">
+                <ProgressTracker
+                  steps={steps}
+                  currentStep={currentStep}
+                  progress={progress}
+                />
+              </div>
+            )}
+
+            {recentAnalyses && recentAnalyses.length > 0 && (
+              <div className="card animate-fade-in">
+                <HistoryDisplay 
+                  analyses={recentAnalyses} 
+                  onItemClick={handleHistoryItemClick} 
+                />
+              </div>
+            )}
+
+            {keywordOutline && (
+              <div className="card animate-fade-in">
+                <OutlineDisplay 
+                  outline={keywordOutline} 
+                  onExport={handleExport}
+                />
+              </div>
+            )}
+          </div>
+        </div>
+      </main>
     </div>
   );
 }
