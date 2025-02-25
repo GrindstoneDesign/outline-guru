@@ -34,6 +34,10 @@ export function Navbar() {
     return () => subscription.unsubscribe();
   }, []);
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+  };
+
   if (loading) {
     return null; // Or show a loading spinner
   }
