@@ -42,11 +42,15 @@
 
 @layer components {
   .cyber-button {
-    @apply relative inline-flex items-center justify-center px-6 py-2 overflow-hidden font-mono font-medium tracking-wider text-spectral-white bg-space-black border border-electric-teal rounded-md group hover:bg-gradient-cyber transition-all duration-300 hover:shadow-neon active:scale-95;
+    @apply relative inline-flex items-center justify-center px-6 py-2 overflow-hidden font-mono font-medium tracking-wider text-spectral-white bg-space-black border border-electric-teal rounded-md transition-all duration-300 hover:bg-gradient-cyber hover:shadow-neon active:scale-95;
   }
   
   .cyber-button::before {
-    @apply content-[''] absolute -z-10 inset-0 bg-gradient-cyber opacity-0 transition-opacity duration-300 group-hover:opacity-100;
+    @apply content-[''] absolute -z-10 inset-0 bg-gradient-cyber opacity-0 transition-opacity duration-300;
+  }
+
+  .cyber-button:hover::before {
+    @apply opacity-100;
   }
 
   .cyber-input {
