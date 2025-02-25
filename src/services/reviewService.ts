@@ -21,17 +21,43 @@ export interface ReviewAnalysis {
   competitor_url: string | null;
 }
 
+export interface AnalysisStep {
+  label: string;
+  status: "pending" | "in-progress" | "completed" | "error";
+}
+
 export const reviewService = {
   analyzeReviews: async (params: { 
     keyword: string;
     location?: string;
-  }) => {
-    const { data, error } = await supabase.functions.invoke('analyze-reviews', {
-      body: params
-    });
+  }, onProgress?: (step: number, progress: number) => void) => {
+    const steps = [
+      { label: "Searching businesses", status: "pending" },
+      { label: "Fetching reviews", status: "pending" },
+      { label: "Analyzing reviews", status: "pending" }
+    ];
 
-    if (error) throw error;
-    return data as { success: boolean; reviews: ReviewAnalysis[] };
+    try {
+      onProgress?.(0, 0);
+      steps[0].status = "in-progress";
+
+      const { data, error } = await supabase.functions.invoke('analyze-reviews', {
+        body: params
+      });
+
+      if (error) throw error;
+      
+      if (!data.reviews || data.reviews.length === 0) {
+        console.log('No reviews found:', data);
+      } else {
+        console.log(`Found ${data.reviews.length} reviews:`, data.reviews);
+      }
+
+      return data as { success: boolean; reviews: ReviewAnalysis[] };
+    } catch (error) {
+      console.error('Error in analyzeReviews:', error);
+      throw error;
+    }
   },
 
   getStoredReviews: async () => {
@@ -44,3 +70,4 @@ export const reviewService = {
     return data as ReviewAnalysis[];
   }
 };
+

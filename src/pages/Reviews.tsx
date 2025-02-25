@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -21,6 +22,7 @@ import {
 } from "@/components/ui/select";
 import { reviewService, ReviewAnalysis } from "@/services/reviewService";
 import { useToast } from "@/hooks/use-toast";
+import { ProgressTracker } from "@/components/ProgressTracker";
 
 export default function Reviews() {
   const [keyword, setKeyword] = useState("");
@@ -29,10 +31,18 @@ export default function Reviews() {
   const [reviews, setReviews] = useState<ReviewAnalysis[]>([]);
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterMessageType, setFilterMessageType] = useState<string>("all");
+  const [currentStep, setCurrentStep] = useState(0);
+  const [progress, setProgress] = useState(0);
   const { toast } = useToast();
 
+  const steps = [
+    { label: "Searching businesses", status: "pending" as const },
+    { label: "Fetching reviews", status: "pending" as const },
+    { label: "Analyzing content", status: "pending" as const }
+  ];
+
   const validateUrl = (url: string | null): boolean => {
-    if (!url) return true; // null URLs are valid
+    if (!url) return true;
     try {
       new URL(url);
       return true;
@@ -46,11 +56,33 @@ export default function Reviews() {
     if (!keyword.trim()) return;
 
     setIsLoading(true);
+    setCurrentStep(0);
+    setProgress(0);
+
+    // Update steps status
+    steps[0].status = "in-progress";
+    steps[1].status = "pending";
+    steps[2].status = "pending";
+
     try {
-      const result = await reviewService.analyzeReviews({
-        keyword: keyword.trim(),
-        location: location.trim() || undefined
-      });
+      const result = await reviewService.analyzeReviews(
+        {
+          keyword: keyword.trim(),
+          location: location.trim() || undefined
+        },
+        (step, prog) => {
+          setCurrentStep(step);
+          setProgress(prog);
+          steps[step].status = "in-progress";
+          if (step > 0) {
+            steps[step - 1].status = "completed";
+          }
+        }
+      );
+
+      // Mark final step as completed
+      steps[steps.length - 1].status = "completed";
+      setProgress(100);
 
       // Validate all competitor URLs before setting the reviews
       const validReviews = result.reviews.map(review => {
@@ -66,12 +98,22 @@ export default function Reviews() {
       });
 
       setReviews(validReviews);
-      toast({
-        title: "Success",
-        description: `Analyzed ${validReviews.length} reviews`,
-      });
+      
+      if (validReviews.length === 0) {
+        toast({
+          title: "No reviews found",
+          description: "Try adjusting your search terms or location",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: `Analyzed ${validReviews.length} reviews`,
+        });
+      }
     } catch (error) {
       console.error('Error analyzing reviews:', error);
+      steps[currentStep].status = "error";
       toast({
         title: "Error",
         description: "Failed to analyze reviews. Please try again.",
@@ -127,10 +169,27 @@ export default function Reviews() {
             className="w-full"
             disabled={isLoading || !keyword.trim()}
           >
-            {isLoading ? "Analyzing Reviews..." : "Analyze Reviews"}
+            {isLoading ? (
+              <span className="flex items-center">
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Analyzing Reviews...
+              </span>
+            ) : (
+              "Analyze Reviews"
+            )}
           </Button>
         </form>
       </Card>
+
+      {isLoading && (
+        <Card className="p-6 mb-8">
+          <ProgressTracker
+            steps={steps}
+            currentStep={currentStep}
+            progress={progress}
+          />
+        </Card>
+      )}
 
       {reviews.length > 0 && (
         <div className="space-y-4">
@@ -226,3 +285,4 @@ export default function Reviews() {
     </div>
   );
 }
+
