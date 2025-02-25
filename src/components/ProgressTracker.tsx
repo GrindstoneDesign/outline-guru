@@ -51,4 +51,3 @@ export const ProgressTracker: React.FC<ProgressTrackerProps> = ({
     </Card>
   );
 };
-
