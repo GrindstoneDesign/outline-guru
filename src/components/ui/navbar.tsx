@@ -1,4 +1,3 @@
-
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./button";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,11 +78,11 @@ export function Navbar() {
               About
             </Link>
             <Link
-              to="/app"
+              to="/competitor-analysis"
               className="text-sm font-mono text-spectral-white/70 transition-colors hover:text-electric-teal"
               onClick={handleContentBriefClick}
             >
-              Content Brief
+              Competitor Analysis
             </Link>
             <Link
               to="/reviews"

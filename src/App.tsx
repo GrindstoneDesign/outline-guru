@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -11,6 +10,7 @@ import Pricing from "@/pages/Pricing";
 import About from "@/pages/About";
 import App from "@/pages/App";
 import Reviews from "@/pages/Reviews";
+import CompetitorAnalysis from "@/pages/CompetitorAnalysis";
 import NotFound from "@/pages/NotFound";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -68,6 +68,14 @@ const AppRoot = () => (
             element={
               <PrivateRoute>
                 <App />
+              </PrivateRoute>
+            } 
+          />
+          <Route 
+            path="/competitor-analysis" 
+            element={
+              <PrivateRoute>
+                <CompetitorAnalysis />
               </PrivateRoute>
             } 
           />

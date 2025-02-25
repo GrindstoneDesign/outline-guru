@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +12,7 @@ import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/ui/icons";
+import { useLocation } from "react-router-dom";
 
 export function SignInDialog() {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +20,7 @@ export function SignInDialog() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,10 +43,14 @@ export function SignInDialog() {
   };
 
   const handleSignInWithGoogle = async () => {
+    const redirectUrl = window.location.hostname === 'localhost' 
+      ? `${window.location.origin}${location.pathname}`
+      : 'https://preview--outline-guru.lovable.app/competitor-analysis';
+
     await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/app`
+        redirectTo: redirectUrl
       }
     });
   };

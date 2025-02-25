@@ -1,36 +1,57 @@
-
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+// Deno-specific imports
+import "xhr";
+import { serve } from "./deps.ts";
 import { fetchDuckDuckGoResults, fetchGoogleResults } from "./search-engines.ts";
 import { generateAnalysis } from "./openai.ts";
 
-const serpApiKey = Deno.env.get('SERP_API_KEY');
-const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+// Define types for our data
+interface SearchResult {
+  title: string;
+  snippet: string;
+  link: string;
+}
+
+interface AnalyzedResult extends SearchResult {
+  position: number;
+  analysis: string;
+}
+
+interface RequestData {
+  keyword: string;
+  searchEngine: 'google' | 'duckduckgo';
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { keyword, searchEngine } = await req.json();
+    const { keyword, searchEngine } = await req.json() as RequestData;
     console.log(`Starting analysis for keyword: ${keyword}`);
 
     // Get search results
+    const serpApiKey = Deno.env.get('SERP_API_KEY');
+    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+
+    if (!serpApiKey || !openAIApiKey) {
+      throw new Error('Missing required API keys');
+    }
+
     const organicResults = searchEngine === 'google' 
-      ? await fetchGoogleResults(keyword, serpApiKey!)
+      ? await fetchGoogleResults(keyword, serpApiKey)
       : await fetchDuckDuckGoResults(keyword);
 
     console.log(`Found ${organicResults.length} search results`);
 
     // For each result, analyze its content structure
     const analyzedResults = await Promise.all(
-      organicResults.map(async (result, index) => {
+      organicResults.map(async (result: SearchResult, index: number) => {
         const analysisPrompt = `
           Analyze this webpage's content structure and outline:
           Title: ${result.title}
@@ -45,7 +66,7 @@ serve(async (req) => {
           Format as a clear, structured outline.
         `;
 
-        const analysis = await generateAnalysis(analysisPrompt, "You are an expert SEO content analyst. Analyze the webpage content structure and provide clear, actionable insights.", openAIApiKey!);
+        const analysis = await generateAnalysis(analysisPrompt, "You are an expert SEO content analyst. Analyze the webpage content structure and provide clear, actionable insights.", openAIApiKey);
         
         console.log(`Completed analysis for result ${index + 1}`);
         
@@ -73,7 +94,7 @@ serve(async (req) => {
     const masterOutline = await generateAnalysis(
       masterOutlinePrompt,
       "You are an expert SEO content strategist. Create a comprehensive content outline based on competitor analysis.", 
-      openAIApiKey!
+      openAIApiKey
     );
 
     console.log("Analysis complete - returning results");
@@ -85,10 +106,10 @@ serve(async (req) => {
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
