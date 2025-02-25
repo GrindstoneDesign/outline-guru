@@ -14,6 +14,8 @@ export type Database = {
           business_location: string | null
           business_name: string
           category: string | null
+          competitor_url: string | null
+          competitor_website: string | null
           created_at: string
           feedback_location: string | null
           id: string
@@ -32,6 +34,8 @@ export type Database = {
           business_location?: string | null
           business_name: string
           category?: string | null
+          competitor_url?: string | null
+          competitor_website?: string | null
           created_at?: string
           feedback_location?: string | null
           id?: string
@@ -50,6 +54,8 @@ export type Database = {
           business_location?: string | null
           business_name?: string
           category?: string | null
+          competitor_url?: string | null
+          competitor_website?: string | null
           created_at?: string
           feedback_location?: string | null
           id?: string
