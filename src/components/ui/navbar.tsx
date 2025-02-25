@@ -50,11 +50,11 @@ export function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-40 bg-background/80 backdrop-blur-xl border-b border-border/40 supports-[backdrop-filter]:bg-background/60">
+    <nav className="sticky top-0 z-40 bg-space-black/80 backdrop-blur-xl border-b border-electric-teal/20 supports-[backdrop-filter]:bg-space-black/60">
       <div className="container mx-auto">
         <div className="flex h-16 items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2">
-            <span className="font-heading font-bold text-xl bg-gradient-to-r from-primary to-teal bg-clip-text text-transparent">
+          <Link to="/" className="flex items-center space-x-2 group">
+            <span className="font-heading font-bold text-xl text-gradient group-hover:text-glow transition-all">
               SERPBriefs
             </span>
           </Link>
@@ -62,32 +62,32 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-6">
             <Link
               to="/features"
-              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              className="text-sm font-mono text-spectral-white/70 transition-colors hover:text-electric-teal"
             >
               Features
             </Link>
             <Link
               to="/pricing"
-              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              className="text-sm font-mono text-spectral-white/70 transition-colors hover:text-electric-teal"
             >
               Pricing
             </Link>
             <Link
               to="/about"
-              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              className="text-sm font-mono text-spectral-white/70 transition-colors hover:text-electric-teal"
             >
               About
             </Link>
             <Link
               to="/app"
-              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              className="text-sm font-mono text-spectral-white/70 transition-colors hover:text-electric-teal"
               onClick={handleContentBriefClick}
             >
               Content Brief
             </Link>
             <Link
               to="/reviews"
-              className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              className="text-sm font-mono text-spectral-white/70 transition-colors hover:text-electric-teal"
             >
               Review Scraper
             </Link>
@@ -95,26 +95,26 @@ export function Navbar() {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full overflow-hidden border border-electric-teal/50 hover:border-electric-teal hover:shadow-neon transition-all">
                     <Avatar className="h-8 w-8">
                       <AvatarImage 
                         src={user.user_metadata.avatar_url} 
                         alt={user.user_metadata.full_name} 
                       />
-                      <AvatarFallback>
+                      <AvatarFallback className="bg-cosmic-purple text-electric-teal">
                         {user.user_metadata.full_name?.charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-56">
-                  <DropdownMenuItem className="font-medium">
+                <DropdownMenuContent align="end" className="w-56 bg-cosmic-purple border border-electric-teal/50">
+                  <DropdownMenuItem className="font-mono text-spectral-white hover:bg-electric-teal/10">
                     <Link to="/app" className="w-full">Dashboard</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="font-medium">
+                  <DropdownMenuItem className="font-mono text-spectral-white hover:bg-electric-teal/10">
                     <Link to="/account" className="w-full">Account</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut} className="font-medium">
+                  <DropdownMenuItem onClick={handleSignOut} className="font-mono text-spectral-white hover:bg-electric-teal/10">
                     Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
