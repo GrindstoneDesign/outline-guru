@@ -1,30 +1,10 @@
 
 import React from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
-
-interface SearchResult {
-  title: string;
-  snippet: string;
-  link: string;
-  position?: number;
-  analysis?: string;
-}
-
-interface OutlineData {
-  outline: string;
-  searchResults: SearchResult[];
-}
-
-interface ApiResponse {
-  success: boolean;
-  error?: string;
-  data?: {
-    outline: string;
-    searchResults: SearchResult[];
-  };
-}
+import { SearchResult, OutlineData } from "@/types/outline";
+import { useSubscription } from "@/hooks/useSubscription";
+import { useRecentAnalyses } from "@/hooks/useRecentAnalyses";
+import { outlineService } from "@/services/outlineService";
 
 export const useOutlineGeneration = () => {
   const [keywordOutline, setKeywordOutline] = React.useState<OutlineData | null>(null);
@@ -34,39 +14,8 @@ export const useOutlineGeneration = () => {
   const [manualMode, setManualMode] = React.useState(false);
   const [manualUrls, setManualUrls] = React.useState<string[]>([]);
   const { toast } = useToast();
-
-  const { data: recentAnalyses, refetch: refetchAnalyses } = useQuery({
-    queryKey: ['competitor-analyses'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('competitor_analyses')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  // Get user's subscription status
-  const { data: subscription } = useQuery({
-    queryKey: ['user-subscription'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return null;
-
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*, subscription_plans(*)')
-        .eq('user_id', session.user.id)
-        .eq('status', 'active')
-        .maybeSingle();
-
-      if (error) throw error;
-      return data;
-    },
-  });
+  const { subscription } = useSubscription();
+  const { recentAnalyses, refetchAnalyses } = useRecentAnalyses();
 
   const handleGenerateOutline = async (keyword: string, searchEngine: "google" | "duckduckgo") => {
     setIsLoading(true);
@@ -74,74 +23,44 @@ export const useOutlineGeneration = () => {
     setCurrentStep(0);
 
     try {
-      // Check subscription for Google search access
       if (searchEngine === 'google' && (!subscription || subscription.subscription_plans.name === 'Starter')) {
         toast({
           title: "Upgrade Required",
           description: "Google search is only available on Pro and Agency plans",
           variant: "destructive",
         });
-        setIsLoading(false);
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('generate-outline', {
-        body: {
-          keyword,
-          searchEngine,
-          manualUrls: manualMode ? manualUrls : undefined
-        }
+      const data = await outlineService.generateOutline({
+        keyword,
+        searchEngine,
+        manualUrls: manualMode ? manualUrls : undefined
       });
 
-      if (error) {
-        console.error("Function invocation error:", error);
-        toast({
-          title: "Error",
-          description: "Failed to generate outline. You can try adding URLs manually.",
-          variant: "destructive",
+      if (data && typeof data.outline === 'string' && Array.isArray(data.searchResults)) {
+        await outlineService.saveAnalysis({
+          keyword,
+          searchEngine,
+          outline: data.outline,
+          searchResults: data.searchResults
         });
-        setManualMode(true);
-        return;
-      }
 
-      if (data) {
-        console.log("Received outline data:", data);
-        if (typeof data.outline === 'string' && Array.isArray(data.searchResults)) {
-          const { error: dbError } = await supabase
-            .from('competitor_analyses')
-            .insert({
-              keyword,
-              search_engine: searchEngine,
-              outline: data.outline,
-              search_results: data.searchResults.filter(result => result.title && result.link)
-            });
+        refetchAnalyses();
+        setKeywordOutline({
+          outline: data.outline,
+          searchResults: data.searchResults.filter(result => result.title && result.link)
+        });
 
-          if (dbError) {
-            console.error("Error storing analysis:", dbError);
-          } else {
-            refetchAnalyses();
-          }
-
-          setKeywordOutline({
-            outline: data.outline,
-            searchResults: data.searchResults.filter(result => result.title && result.link)
-          });
-          toast({
-            title: "Success",
-            description: "Successfully generated outline for keyword.",
-          });
-          
-          setManualMode(false);
-          setManualUrls([]);
-        } else {
-          console.error("Invalid data structure received:", data);
-          toast({
-            title: "Error",
-            description: "Received invalid data format. Please try again or add URLs manually.",
-            variant: "destructive",
-          });
-          setManualMode(true);
-        }
+        toast({
+          title: "Success",
+          description: "Successfully generated outline for keyword.",
+        });
+        
+        setManualMode(false);
+        setManualUrls([]);
+      } else {
+        throw new Error("Invalid data structure received");
       }
     } catch (err) {
       console.error("Error generating outline:", err);
@@ -173,22 +92,10 @@ export const useOutlineGeneration = () => {
     setCurrentStep(0);
 
     try {
-      const { data, error } = await supabase.functions.invoke('generate-outline', {
-        body: {
-          manualUrls,
-          isManualMode: true
-        }
+      const data = await outlineService.generateOutline({
+        manualUrls,
+        isManualMode: true
       });
-
-      if (error) {
-        console.error("Manual analysis error:", error);
-        toast({
-          title: "Error",
-          description: "Failed to analyze URLs. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
 
       if (data && typeof data.outline === 'string' && Array.isArray(data.searchResults)) {
         setKeywordOutline({
