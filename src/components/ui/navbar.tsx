@@ -1,5 +1,5 @@
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "./button";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
@@ -16,6 +16,7 @@ import { SignInDialog } from "../auth/SignInDialog";
 export function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -34,6 +35,14 @@ export function Navbar() {
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
+    navigate('/');
+  };
+
+  const handleContentBriefClick = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      return;
+    }
   };
 
   if (loading) {
@@ -72,6 +81,7 @@ export function Navbar() {
             <Link
               to="/app"
               className="text-sm font-medium text-foreground/70 transition-colors hover:text-foreground"
+              onClick={handleContentBriefClick}
             >
               Content Brief
             </Link>
@@ -118,4 +128,3 @@ export function Navbar() {
     </nav>
   );
 }
-
