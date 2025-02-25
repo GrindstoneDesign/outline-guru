@@ -31,6 +31,16 @@ export default function Reviews() {
   const [filterMessageType, setFilterMessageType] = useState<string>("all");
   const { toast } = useToast();
 
+  const validateUrl = (url: string | null): boolean => {
+    if (!url) return true; // null URLs are valid
+    try {
+      new URL(url);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!keyword.trim()) return;
@@ -42,10 +52,23 @@ export default function Reviews() {
         location: location.trim() || undefined
       });
 
-      setReviews(result.reviews);
+      // Validate all competitor URLs before setting the reviews
+      const validReviews = result.reviews.map(review => {
+        if (review.competitor_url && !validateUrl(review.competitor_url)) {
+          toast({
+            title: "Warning",
+            description: `Invalid competitor URL found for ${review.business_name}. URL will not be displayed.`,
+            variant: "destructive",
+          });
+          return { ...review, competitor_url: null };
+        }
+        return review;
+      });
+
+      setReviews(validReviews);
       toast({
         title: "Success",
-        description: `Analyzed ${result.reviews.length} reviews`,
+        description: `Analyzed ${validReviews.length} reviews`,
       });
     } catch (error) {
       console.error('Error analyzing reviews:', error);
@@ -163,6 +186,7 @@ export default function Reviews() {
                   <TableHead>Topic</TableHead>
                   <TableHead>Category</TableHead>
                   <TableHead>Message Type</TableHead>
+                  <TableHead>Competitor URL</TableHead>
                   <TableHead>Key Feedback</TableHead>
                 </TableRow>
               </TableHeader>
@@ -177,6 +201,18 @@ export default function Reviews() {
                     <TableCell>{review.topic}</TableCell>
                     <TableCell>{review.category}</TableCell>
                     <TableCell>{review.message_type}</TableCell>
+                    <TableCell>
+                      {review.competitor_url ? (
+                        <a 
+                          href={review.competitor_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline truncate block max-w-xs"
+                        >
+                          {review.competitor_url}
+                        </a>
+                      ) : '-'}
+                    </TableCell>
                     <TableCell className="max-w-xs">
                       <div className="truncate">{review.feedback_location}</div>
                     </TableCell>
@@ -190,4 +226,3 @@ export default function Reviews() {
     </div>
   );
 }
-
