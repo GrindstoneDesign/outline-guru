@@ -15,17 +15,18 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-async function findPlaceId(keyword: string, location: string) {
+async function searchBusinesses(keyword: string, location?: string) {
   if (!serpApiKey) {
     throw new Error('SERP_API_KEY is not configured');
   }
 
-  console.log(`Finding place_id for: ${keyword} in ${location}`);
+  console.log(`Searching for businesses with keyword: ${keyword} in ${location || 'any location'}`);
   
+  const searchQuery = location ? `${keyword} in ${location}` : keyword;
   const params = new URLSearchParams({
     api_key: serpApiKey,
     engine: 'google_maps',
-    q: `${keyword} ${location}`,
+    q: searchQuery,
     type: 'search',
     hl: 'en'
   });
@@ -35,20 +36,19 @@ async function findPlaceId(keyword: string, location: string) {
     const data = await response.json();
     
     if (!response.ok) {
-      console.error('SerpAPI Places error:', data);
-      throw new Error(`SerpAPI Places request failed: ${data.error || 'Unknown error'}`);
+      console.error('SerpAPI search error:', data);
+      throw new Error(`SerpAPI search request failed: ${data.error || 'Unknown error'}`);
     }
 
-    if (!data.local_results || !data.local_results[0]) {
-      console.log('No places found in SerpAPI response:', data);
-      return null;
+    if (!data.local_results || !data.local_results.length) {
+      console.log('No businesses found:', data);
+      return [];
     }
 
-    const placeId = data.local_results[0].place_id;
-    console.log(`Found place_id: ${placeId}`);
-    return placeId;
+    console.log(`Found ${data.local_results.length} businesses`);
+    return data.local_results;
   } catch (error) {
-    console.error('Error finding place_id:', error);
+    console.error('Error searching businesses:', error);
     throw error;
   }
 }
@@ -64,8 +64,7 @@ async function fetchReviews(placeId: string) {
     api_key: serpApiKey,
     engine: 'google_maps_reviews',
     place_id: placeId,
-    sort_by: 'newestFirst',
-    num: '10',  // Fetch top 10 reviews
+    sort: 'newest',
     hl: 'en'
   });
 
@@ -78,12 +77,12 @@ async function fetchReviews(placeId: string) {
       throw new Error(`SerpAPI Reviews request failed: ${data.error || 'Unknown error'}`);
     }
 
-    if (!data.reviews || !Array.isArray(data.reviews)) {
-      console.log('No reviews found in SerpAPI response:', data);
-      return [];
+    if (!data.reviews) {
+      console.log('No reviews found:', data);
+      return { reviews: [], placeInfo: data.place_info || {} };
     }
 
-    console.log(`Found ${data.reviews.length} reviews from SerpAPI`);
+    console.log(`Found ${data.reviews.length} reviews`);
     return {
       reviews: data.reviews,
       placeInfo: data.place_info || {}
@@ -94,19 +93,20 @@ async function fetchReviews(placeId: string) {
   }
 }
 
-async function analyzeReview(review: any, businessName: string) {
+async function analyzeReview(review: any, businessInfo: any) {
   if (!openAIApiKey) {
     throw new Error('OPENAI_API_KEY is not configured');
   }
 
   const prompt = `
     Analyze this business review and provide:
-    1. Main Topic/Theme (one short phrase)
+    1. Main Topic (one short phrase)
     2. Category (exactly one of: motivation, value, or anxiety)
     3. Message Type (exactly one of: Pain Point, Purchase Prompt, Feature Request, or Praise)
-    4. Key Feedback Location (quote the specific part of the review containing the main feedback)
+    4. Key Feedback Location (quote the specific part that contains the main feedback)
 
-    Review: "${review.snippet}"
+    Business Name: ${businessInfo.name || 'Unknown'}
+    Review: "${review.snippet || review.text}"
 
     Format response as JSON like:
     {
@@ -140,10 +140,10 @@ async function analyzeReview(review: any, businessName: string) {
     }
 
     const data = await response.json();
-    console.log('OpenAI analysis completed successfully');
+    console.log('OpenAI analysis completed');
     return JSON.parse(data.choices[0].message.content);
   } catch (error) {
-    console.error('Error analyzing review with OpenAI:', error);
+    console.error('Error analyzing review:', error);
     throw error;
   }
 }
@@ -161,71 +161,67 @@ serve(async (req) => {
       throw new Error('Keyword is required');
     }
 
-    // First find the place_id
-    const placeId = await findPlaceId(keyword, location || '');
-    if (!placeId) {
+    // First search for businesses
+    const businesses = await searchBusinesses(keyword, location);
+    if (businesses.length === 0) {
       return new Response(
         JSON.stringify({ 
           success: true, 
           reviews: [],
-          message: 'No business found for the given criteria' 
+          message: 'No businesses found for the given criteria' 
         }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Then fetch reviews using the place_id
-    const { reviews, placeInfo } = await fetchReviews(placeId);
-    console.log(`Found ${reviews.length} reviews to analyze`);
+    // Analyze reviews for each business
+    const allReviews = [];
+    for (const business of businesses.slice(0, 3)) { // Limit to top 3 businesses
+      console.log(`Processing business: ${business.title}`);
+      
+      if (!business.place_id) {
+        console.log(`No place_id found for business: ${business.title}`);
+        continue;
+      }
 
-    if (reviews.length === 0) {
-      return new Response(
-        JSON.stringify({ 
-          success: true, 
-          reviews: [],
-          message: 'No reviews found for the business' 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-
-    // Analyze each review with ChatGPT
-    const analyzedReviews = await Promise.all(
-      reviews.map(async (review: any) => {
+      // Fetch reviews for this business
+      const { reviews, placeInfo } = await fetchReviews(business.place_id);
+      
+      // Analyze each review
+      for (const review of reviews.slice(0, 5)) { // Limit to 5 most recent reviews per business
         try {
-          console.log(`Analyzing review for business: ${placeInfo.name || 'Unknown'}`);
-          const analysis = await analyzeReview(review, placeInfo.name || '');
-          return {
-            business_name: placeInfo.name || '',
-            business_location: placeInfo.address || '',
-            rating: review.rating || null,
-            review_text: review.snippet || '',
-            review_date: review.date || null,
-            reviewer_name: review.user?.name || '',
+          const analysis = await analyzeReview(review, placeInfo);
+          allReviews.push({
+            business_name: placeInfo.name || business.title,
+            business_location: placeInfo.address || business.address,
+            rating: review.rating,
+            review_text: review.snippet || review.text,
+            review_date: review.date ? new Date(review.date).toISOString() : null,
+            reviewer_name: review.user?.name,
             keyword,
             ...analysis,
             message_type: analysis.messageType,
-            competitor_url: placeInfo.website || null,
-          };
+            competitor_url: placeInfo.website || business.website,
+            review_source: 'Google',
+            source_link: null, // Could add review link if available
+            sentiment_analysis: {}, // Could add sentiment analysis later
+          });
         } catch (error) {
-          console.error('Error analyzing individual review:', error);
-          return null;
+          console.error(`Error analyzing review for ${business.title}:`, error);
         }
-      })
-    );
+      }
+    }
 
-    // Filter out failed analyses
-    const validReviews = analyzedReviews.filter(review => review !== null);
-    console.log(`Successfully analyzed ${validReviews.length} reviews`);
+    console.log(`Successfully analyzed ${allReviews.length} reviews`);
 
-    // Store in Supabase
-    if (validReviews.length > 0) {
+    // Store reviews in database
+    if (allReviews.length > 0) {
       const { error: insertError } = await supabase
         .from('business_reviews')
-        .insert(validReviews);
+        .insert(allReviews);
 
       if (insertError) {
-        console.error('Error inserting reviews into database:', insertError);
+        console.error('Error inserting reviews:', insertError);
         throw insertError;
       }
     }
@@ -233,8 +229,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        reviews: validReviews,
-        message: `Successfully analyzed ${validReviews.length} reviews`
+        reviews: allReviews,
+        message: `Successfully analyzed ${allReviews.length} reviews` 
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
@@ -248,7 +244,7 @@ serve(async (req) => {
         reviews: [] 
       }),
       { 
-        status: 500, 
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
