@@ -108,7 +108,7 @@ async function analyzeReview(review: any, businessInfo: any) {
     Business Name: ${businessInfo.name || 'Unknown'}
     Review: "${review.snippet || review.text}"
 
-    Format response as JSON like:
+    Respond with ONLY a JSON object in this format:
     {
       "topic": "string",
       "category": "motivation|value|anxiety",
@@ -125,11 +125,15 @@ async function analyzeReview(review: any, businessInfo: any) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: 'You are an expert at analyzing customer reviews and feedback.' },
+          { 
+            role: 'system', 
+            content: 'You are an expert at analyzing customer reviews. Always respond with ONLY a raw JSON object, no markdown formatting or explanation.' 
+          },
           { role: 'user', content: prompt }
         ],
+        temperature: 0.3 // Lower temperature for more consistent outputs
       }),
     });
 
@@ -140,8 +144,20 @@ async function analyzeReview(review: any, businessInfo: any) {
     }
 
     const data = await response.json();
-    console.log('OpenAI analysis completed');
-    return JSON.parse(data.choices[0].message.content);
+    console.log('Raw OpenAI response:', data.choices[0].message.content);
+    
+    try {
+      // Attempt to parse the response, cleaning up any markdown formatting if present
+      const cleanedContent = data.choices[0].message.content
+        .replace(/```json\n?/, '')
+        .replace(/```\n?/, '')
+        .trim();
+      return JSON.parse(cleanedContent);
+    } catch (parseError) {
+      console.error('Error parsing OpenAI response:', parseError);
+      console.error('Raw content:', data.choices[0].message.content);
+      throw new Error('Failed to parse OpenAI response');
+    }
   } catch (error) {
     console.error('Error analyzing review:', error);
     throw error;
@@ -204,7 +220,8 @@ serve(async (req) => {
             competitor_url: placeInfo.website || business.website,
             review_source: 'Google',
             source_link: null, // Could add review link if available
-            sentiment_analysis: {}, // Could add sentiment analysis later
+            sentiment_analysis: null, // Could add sentiment analysis later
+            created_at: new Date().toISOString()
           });
         } catch (error) {
           console.error(`Error analyzing review for ${business.title}:`, error);
@@ -250,3 +267,4 @@ serve(async (req) => {
     );
   }
 });
+
