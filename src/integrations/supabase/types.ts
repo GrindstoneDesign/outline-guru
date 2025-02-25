@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      business_reviews: {
+        Row: {
+          business_location: string | null
+          business_name: string
+          created_at: string
+          id: string
+          keyword: string
+          message_type: string | null
+          rating: number | null
+          review_date: string | null
+          review_source: string | null
+          review_text: string
+          sentiment_analysis: Json | null
+          source_link: string | null
+        }
+        Insert: {
+          business_location?: string | null
+          business_name: string
+          created_at?: string
+          id?: string
+          keyword: string
+          message_type?: string | null
+          rating?: number | null
+          review_date?: string | null
+          review_source?: string | null
+          review_text: string
+          sentiment_analysis?: Json | null
+          source_link?: string | null
+        }
+        Update: {
+          business_location?: string | null
+          business_name?: string
+          created_at?: string
+          id?: string
+          keyword?: string
+          message_type?: string | null
+          rating?: number | null
+          review_date?: string | null
+          review_source?: string | null
+          review_text?: string
+          sentiment_analysis?: Json | null
+          source_link?: string | null
+        }
+        Relationships: []
+      }
       competitor_analyses: {
         Row: {
           created_at: string
