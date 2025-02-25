@@ -32,9 +32,9 @@ export const reviewService = {
     location?: string;
   }, onProgress?: (step: number, progress: number) => void) => {
     const steps = [
-      { label: "Searching businesses", status: "pending" },
-      { label: "Fetching reviews", status: "pending" },
-      { label: "Analyzing reviews", status: "pending" }
+      { label: "Searching businesses", status: "pending" as const },
+      { label: "Fetching reviews", status: "pending" as const },
+      { label: "Analyzing reviews", status: "pending" as const }
     ];
 
     try {
