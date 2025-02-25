@@ -33,10 +33,10 @@ async function fetchReviews(keyword: string, location: string) {
 async function analyzeReview(review: any) {
   const prompt = `
     Analyze this business review and provide:
-    1. Main Topic/Theme
-    2. Category (motivation, value, or anxiety)
-    3. Message Type (Pain Point/Problem, Purchase Prompt, Feature Request, or Praise)
-    4. Key Feedback Location (where in the review the main feedback can be found)
+    1. Main Topic/Theme (one short phrase)
+    2. Category (exactly one of: motivation, value, or anxiety)
+    3. Message Type (exactly one of: Pain Point, Purchase Prompt, Feature Request, or Praise)
+    4. Key Feedback Location (quote the specific part of the review containing the main feedback)
 
     Review: "${review.snippet}"
 
@@ -56,7 +56,7 @@ async function analyzeReview(review: any) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4',
       messages: [
         { role: 'system', content: 'You are an expert at analyzing customer reviews and feedback.' },
         { role: 'user', content: prompt }

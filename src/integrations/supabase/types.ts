@@ -13,7 +13,9 @@ export type Database = {
         Row: {
           business_location: string | null
           business_name: string
+          category: string | null
           created_at: string
+          feedback_location: string | null
           id: string
           keyword: string
           message_type: string | null
@@ -21,13 +23,17 @@ export type Database = {
           review_date: string | null
           review_source: string | null
           review_text: string
+          reviewer_name: string | null
           sentiment_analysis: Json | null
           source_link: string | null
+          topic: string | null
         }
         Insert: {
           business_location?: string | null
           business_name: string
+          category?: string | null
           created_at?: string
+          feedback_location?: string | null
           id?: string
           keyword: string
           message_type?: string | null
@@ -35,13 +41,17 @@ export type Database = {
           review_date?: string | null
           review_source?: string | null
           review_text: string
+          reviewer_name?: string | null
           sentiment_analysis?: Json | null
           source_link?: string | null
+          topic?: string | null
         }
         Update: {
           business_location?: string | null
           business_name?: string
+          category?: string | null
           created_at?: string
+          feedback_location?: string | null
           id?: string
           keyword?: string
           message_type?: string | null
@@ -49,8 +59,10 @@ export type Database = {
           review_date?: string | null
           review_source?: string | null
           review_text?: string
+          reviewer_name?: string | null
           sentiment_analysis?: Json | null
           source_link?: string | null
+          topic?: string | null
         }
         Relationships: []
       }
