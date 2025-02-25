@@ -18,6 +18,7 @@ export interface ReviewAnalysis {
   source_link: string | null;
   sentiment_analysis: any | null;
   created_at: string;
+  competitor_url: string | null;
 }
 
 export const reviewService = {
