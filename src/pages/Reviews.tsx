@@ -20,7 +20,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { reviewService, ReviewAnalysis } from "@/services/reviewService";
+import {
+  reviewService,
+  ReviewAnalysis,
+  AnalysisStep
+} from "@/services/reviewService";
 import { useToast } from "@/hooks/use-toast";
 import { ProgressTracker } from "@/components/ProgressTracker";
 
@@ -35,10 +39,10 @@ export default function Reviews() {
   const [progress, setProgress] = useState(0);
   const { toast } = useToast();
 
-  const steps = [
-    { label: "Searching businesses", status: "pending" as const },
-    { label: "Fetching reviews", status: "pending" as const },
-    { label: "Analyzing content", status: "pending" as const }
+  const steps: AnalysisStep[] = [
+    { label: "Searching businesses", status: "pending" },
+    { label: "Fetching reviews", status: "pending" },
+    { label: "Analyzing content", status: "pending" }
   ];
 
   const validateUrl = (url: string | null): boolean => {

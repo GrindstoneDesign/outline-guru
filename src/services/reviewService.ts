@@ -31,10 +31,10 @@ export const reviewService = {
     keyword: string;
     location?: string;
   }, onProgress?: (step: number, progress: number) => void) => {
-    const steps = [
-      { label: "Searching businesses", status: "pending" as const },
-      { label: "Fetching reviews", status: "pending" as const },
-      { label: "Analyzing reviews", status: "pending" as const }
+    const steps: AnalysisStep[] = [
+      { label: "Searching businesses", status: "pending" },
+      { label: "Fetching reviews", status: "pending" },
+      { label: "Analyzing reviews", status: "pending" }
     ];
 
     try {
