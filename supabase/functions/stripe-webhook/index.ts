@@ -1,6 +1,7 @@
 
 import { createClient } from '@supabase/supabase-js';
-import Stripe from 'stripe';
+// Fix the Stripe import to use npm: prefix for Deno
+import { Stripe } from 'npm:stripe@^13.10.0';
 
 const stripe = new Stripe(Deno.env.get('STRIPE_SECRET_KEY') || '', {
   apiVersion: '2023-10-16',
@@ -85,7 +86,11 @@ Deno.serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ received: true }), {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      },
       status: 200,
     });
   } catch (error) {
@@ -93,7 +98,11 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({ error: error.message }),
       {
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        },
         status: 400,
       }
     );

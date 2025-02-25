@@ -2,17 +2,22 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export interface ReviewAnalysis {
+  id: string;
   business_name: string;
-  rating: number;
+  business_location: string | null;
+  rating: number | null;
   review_text: string;
-  review_date: string;
-  reviewer_name: string;
-  location: string;
+  review_date: string | null;
+  reviewer_name: string | null;
   keyword: string;
-  topic: string;
-  category: 'motivation' | 'value' | 'anxiety';
-  messageType: 'Pain Point' | 'Purchase Prompt' | 'Feature Request' | 'Praise';
-  feedbackLocation: string;
+  topic: string | null;
+  category: string | null;
+  message_type: string | null;
+  feedback_location: string | null;
+  review_source: string | null;
+  source_link: string | null;
+  sentiment_analysis: any | null;
+  created_at: string;
 }
 
 export const reviewService = {
