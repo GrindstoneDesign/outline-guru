@@ -30,12 +30,16 @@ export const useOutlineGeneration = () => {
     setCurrentStep(0);
 
     try {
+      // Only check for subscription if using Google search
       if (searchEngine === 'google' && (!subscription || subscription.subscription_plans.name === 'Starter')) {
         toast({
           title: "Upgrade Required",
           description: "Google search is only available on Pro and Agency plans",
           variant: "destructive",
         });
+        setIsLoading(false);
+        setProgress(0);
+        setCurrentStep(0);
         return;
       }
 

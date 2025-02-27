@@ -50,8 +50,8 @@ export const KeywordInput: React.FC<KeywordInputProps> = ({ onSubmit, isLoading 
               <SelectValue placeholder="Select search engine" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="duckduckgo">DuckDuckGo (Free)</SelectItem>
-              <SelectItem value="google">Google (SERP API)</SelectItem>
+              <SelectItem value="duckduckgo">DuckDuckGo (Free - No API Required)</SelectItem>
+              <SelectItem value="google">Google (Requires SERP API Credits)</SelectItem>
             </SelectContent>
           </Select>
         </div>
