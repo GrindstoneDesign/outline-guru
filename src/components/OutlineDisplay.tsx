@@ -1,9 +1,9 @@
-
 import React from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Star } from "lucide-react";
 
 interface SearchResult {
   title: string;
@@ -11,6 +11,12 @@ interface SearchResult {
   link: string;
   position?: number;
   analysis?: string;
+  resultType?: 'organic' | 'local' | 'brand';
+  rating?: number;
+  reviews?: number;
+  address?: string;
+  hours?: string;
+  type?: string;
 }
 
 interface OutlineDisplayProps {
@@ -80,6 +86,11 @@ export const OutlineDisplay: React.FC<OutlineDisplayProps> = ({ outline, onExpor
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="text-lg font-medium">
                             {outline.searchResults[selectedCompetitor].title}
+                            {outline.searchResults[selectedCompetitor].resultType && (
+                              <span className="ml-2 text-sm text-muted-foreground">
+                                ({outline.searchResults[selectedCompetitor].resultType})
+                              </span>
+                            )}
                           </h4>
                           <span className="text-sm text-muted-foreground">
                             Position: {outline.searchResults[selectedCompetitor].position}
@@ -96,6 +107,31 @@ export const OutlineDisplay: React.FC<OutlineDisplayProps> = ({ outline, onExpor
                         <p className="text-sm text-muted-foreground">
                           {outline.searchResults[selectedCompetitor].snippet}
                         </p>
+                        {outline.searchResults[selectedCompetitor].resultType === 'local' && (
+                          <div className="mt-4 space-y-2">
+                            {outline.searchResults[selectedCompetitor].rating && (
+                              <div className="flex items-center gap-1">
+                                <Star className="h-4 w-4 text-yellow-400" />
+                                <span className="text-sm">
+                                  {outline.searchResults[selectedCompetitor].rating} 
+                                  {outline.searchResults[selectedCompetitor].reviews && 
+                                    ` (${outline.searchResults[selectedCompetitor].reviews} reviews)`
+                                  }
+                                </span>
+                              </div>
+                            )}
+                            {outline.searchResults[selectedCompetitor].address && (
+                              <p className="text-sm">
+                                📍 {outline.searchResults[selectedCompetitor].address}
+                              </p>
+                            )}
+                            {outline.searchResults[selectedCompetitor].hours && (
+                              <p className="text-sm">
+                                🕒 {outline.searchResults[selectedCompetitor].hours}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       <div className="pt-4 border-t">

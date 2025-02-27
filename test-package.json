@@ -1,0 +1,13 @@
+{
+  "name": "google-maps-api-test",
+  "version": "1.0.0",
+  "description": "Test script for Google Maps API integration",
+  "main": "test-google-maps-api.js",
+  "type": "module",
+  "scripts": {
+    "test": "node test-google-maps-api.js"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.0"
+  }
+} 

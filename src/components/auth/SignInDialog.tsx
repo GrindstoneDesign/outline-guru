@@ -14,13 +14,27 @@ import { Label } from "@/components/ui/label";
 import { Icons } from "@/components/ui/icons";
 import { useLocation } from "react-router-dom";
 
-export function SignInDialog() {
+interface SignInDialogProps {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}
+
+export function SignInDialog({ open, onOpenChange }: SignInDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
+
+  // Use the controlled open state if provided
+  const dialogOpen = open !== undefined ? open : isOpen;
+  const setDialogOpen = (value: boolean) => {
+    if (onOpenChange) {
+      onOpenChange(value);
+    }
+    setIsOpen(value);
+  };
 
   const handleEmailSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +53,7 @@ export function SignInDialog() {
     }
 
     setIsLoading(false);
-    setIsOpen(false);
+    setDialogOpen(false);
   };
 
   const handleSignInWithGoogle = async () => {
@@ -56,7 +70,7 @@ export function SignInDialog() {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button>Sign In</Button>
       </DialogTrigger>

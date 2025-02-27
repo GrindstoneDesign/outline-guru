@@ -1,10 +1,15 @@
-
 export interface SearchResult {
   title: string;
   snippet: string;
   link: string;
   position?: number;
   analysis?: string;
+  resultType?: 'organic' | 'local' | 'brand';
+  rating?: number;
+  reviews?: number;
+  address?: string;
+  hours?: string;
+  type?: string;
 }
 
 export interface OutlineData {

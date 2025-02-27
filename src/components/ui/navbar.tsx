@@ -16,6 +16,7 @@ export function Navbar() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const [showSignInDialog, setShowSignInDialog] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -40,6 +41,7 @@ export function Navbar() {
   const handleContentBriefClick = (e: React.MouseEvent) => {
     if (!user) {
       e.preventDefault();
+      setShowSignInDialog(true);
       return;
     }
   };
@@ -119,7 +121,7 @@ export function Navbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <SignInDialog />
+              <SignInDialog open={showSignInDialog} onOpenChange={setShowSignInDialog} />
             )}
           </div>
         </div>

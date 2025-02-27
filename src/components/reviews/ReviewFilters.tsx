@@ -1,4 +1,3 @@
-
 import React from "react";
 import {
   Select,
@@ -10,58 +9,52 @@ import {
 
 interface ReviewFiltersProps {
   filterCategory: string;
+  setFilterCategory: (value: string) => void;
   filterMessageType: string;
-  onCategoryChange: (value: string) => void;
-  onMessageTypeChange: (value: string) => void;
+  setFilterMessageType: (value: string) => void;
 }
 
-export const ReviewFilters: React.FC<ReviewFiltersProps> = ({
+export function ReviewFilters({
   filterCategory,
+  setFilterCategory,
   filterMessageType,
-  onCategoryChange,
-  onMessageTypeChange,
-}) => {
+  setFilterMessageType,
+}: ReviewFiltersProps) {
   return (
-    <div className="flex flex-col md:flex-row gap-4">
-      <div className="flex-1">
-        <label className="text-sm font-medium mb-2 block">
-          Filter by Category
-        </label>
+    <div className="flex flex-col sm:flex-row gap-4">
+      <div className="w-full sm:w-1/2">
         <Select
           value={filterCategory}
-          onValueChange={onCategoryChange}
+          onValueChange={setFilterCategory}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select category" />
+            <SelectValue placeholder="Filter by category" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="motivation">Motivation</SelectItem>
-            <SelectItem value="value">Value</SelectItem>
-            <SelectItem value="anxiety">Anxiety</SelectItem>
+            <SelectItem value="positive">Positive</SelectItem>
+            <SelectItem value="negative">Negative</SelectItem>
+            <SelectItem value="neutral">Neutral</SelectItem>
           </SelectContent>
         </Select>
       </div>
-      <div className="flex-1">
-        <label className="text-sm font-medium mb-2 block">
-          Filter by Message Type
-        </label>
+      <div className="w-full sm:w-1/2">
         <Select
           value={filterMessageType}
-          onValueChange={onMessageTypeChange}
+          onValueChange={setFilterMessageType}
         >
           <SelectTrigger>
-            <SelectValue placeholder="Select message type" />
+            <SelectValue placeholder="Filter by message type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="Pain Point">Pain Point</SelectItem>
-            <SelectItem value="Purchase Prompt">Purchase Prompt</SelectItem>
-            <SelectItem value="Feature Request">Feature Request</SelectItem>
-            <SelectItem value="Praise">Praise</SelectItem>
+            <SelectItem value="all">All Message Types</SelectItem>
+            <SelectItem value="complaint">Complaints</SelectItem>
+            <SelectItem value="suggestion">Suggestions</SelectItem>
+            <SelectItem value="question">Questions</SelectItem>
+            <SelectItem value="praise">Praise</SelectItem>
           </SelectContent>
         </Select>
       </div>
     </div>
   );
-};
+}
